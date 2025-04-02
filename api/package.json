@@ -1,0 +1,25 @@
+{
+  "name": "olivine-api",
+  "version": "1.0.0",
+  "description": "Olivine API for Langflow integration",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "type": "module",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
+  },
+  "dependencies": {
+    "@sendgrid/mail": "^7.7.0",
+    "@tsndr/cloudflare-worker-jwt": "^3.1.4",
+    "axios": "^1.6.2",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "node-fetch": "^3.3.2",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "vercel": "^32.5.0"
+  }
+} 

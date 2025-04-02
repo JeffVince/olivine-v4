@@ -1,0 +1,46 @@
+{
+    "buildCommand": "npm run build",
+    "outputDirectory": "dist",
+    "framework": "vite",
+    "rewrites": [
+      {
+        "source": "/api/auth/:path*",
+        "destination": "/api/auth/:path*"
+      },
+      {
+        "source": "/api/health",
+        "destination": "/api/health"
+      },
+      {
+        "source": "/api/:path*",
+        "destination": "$PULSAR_API_URL/api/:path*"
+      }
+    ],
+    "functions": {
+      "api/auth/**/*.js": {
+        "runtime": "@vercel/edge@latest"
+      },
+      "api/health.js": {
+        "runtime": "@vercel/edge@latest"
+      }
+    },
+    "headers": [
+      {
+        "source": "/(.*)",
+        "headers": [
+          {
+            "key": "X-Content-Type-Options",
+            "value": "nosniff"
+          },
+          {
+            "key": "X-Frame-Options",
+            "value": "DENY"
+          },
+          {
+            "key": "X-XSS-Protection",
+            "value": "1; mode=block"
+          }
+        ]
+      }
+    ]
+  } 
