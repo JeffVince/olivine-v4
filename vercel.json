@@ -16,14 +16,6 @@
         "destination": "$PULSAR_API_URL/api/:path*"
       }
     ],
-    "functions": {
-      "api/auth/**/*.js": {
-        "runtime": "@vercel/edge@latest"
-      },
-      "api/health.js": {
-        "runtime": "@vercel/edge@latest"
-      }
-    },
     "headers": [
       {
         "source": "/(.*)",

@@ -4,6 +4,9 @@
   "version": "1.0.0",
   "description": "Frontend for Olivine V4 - AI Workflow Platform",
   "type": "module",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "dev": "vite",
     "build": "npx vite build --outDir dist",
