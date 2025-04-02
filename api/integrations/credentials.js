@@ -38,9 +38,9 @@ export default async function handler(request) {
     // Fetch credentials (integrations) for the user, excluding sensitive data
     const query = `SELECT id, name, type, service_name, status, created_at 
                      FROM integrations 
-                     WHERE user_id = ? 
-                     ALLOW FILTERING`; // Use ALLOW FILTERING if user_id is not the partition key
-                     // TODO: Review table schema - ensure efficient querying by user_id
+                     WHERE user_id = ?`; 
+                     // REMOVED ALLOW FILTERING - user_id is partition key now
+                     // TODO: Review table schema - ensure efficient querying by user_id (DONE via schema design)
                      
     const params = [userId];
     const result = await client.execute(query, params, { prepare: true });

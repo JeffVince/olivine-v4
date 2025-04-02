@@ -56,7 +56,8 @@ export default async function handler(request) {
         name: agent.name,
         description: agent.description,
         template_id: agent.template_id ? agent.template_id.toString() : null, // Assuming template_id might be UUID
-        associated_credential_ids: agent.associated_credential_ids || [], // Ensure it's an array
+        // Ensure associated_credential_ids are strings for frontend
+        associated_credential_ids: (agent.associated_credential_ids || []).map(id => id.toString()), 
         created_at: agent.created_at ? agent.created_at.toISOString() : null,
         updated_at: agent.updated_at ? agent.updated_at.toISOString() : null,
       };
@@ -94,9 +95,24 @@ export default async function handler(request) {
            if (!Array.isArray(body.associated_credential_ids)) {
                return new Response(JSON.stringify({ message: 'associated_credential_ids must be an array' }), { status: 400 });
            }
+           // Validate each ID in the array is a valid UUID string format
+           const invalidIds = body.associated_credential_ids.filter(id => {
+               try {
+                   types.Uuid.fromString(id);
+                   return false; // It's a valid UUID string
+               } catch (e) {
+                   return true; // Invalid format
+               }
+           });
+           if (invalidIds.length > 0) {
+                console.warn(`Invalid UUID format found in associated_credential_ids for user ${user.id}:`, invalidIds);
+                return new Response(JSON.stringify({ message: `Invalid format found in associated credential IDs: ${invalidIds.join(', ')}` }), { status: 400 });
+           }
            // TODO: Potentially validate that IDs in the array actually exist in the integrations table for this user?
+           // (Skipping this expensive check for now, but consider adding later if needed)
            fieldsToUpdate.push('associated_credential_ids = ?');
-           params.push(body.associated_credential_ids); // Assuming DB schema expects list<text> or similar
+           // Send the array of strings directly, matching list<text>
+           params.push(body.associated_credential_ids); 
       }
       
       fieldsToUpdate.push('updated_at = ?');
@@ -142,7 +158,8 @@ export default async function handler(request) {
         name: updatedAgent.name,
         description: updatedAgent.description,
         template_id: updatedAgent.template_id ? updatedAgent.template_id.toString() : null,
-        associated_credential_ids: updatedAgent.associated_credential_ids || [],
+        // Ensure associated_credential_ids are strings for frontend
+        associated_credential_ids: (updatedAgent.associated_credential_ids || []).map(id => id.toString()), 
         created_at: updatedAgent.created_at ? updatedAgent.created_at.toISOString() : null,
         updated_at: updatedAgent.updated_at ? updatedAgent.updated_at.toISOString() : null,
       };
