@@ -99,7 +99,7 @@
       <section class="settings-section">
         <h2>API Keys</h2>
         <p>Manage your API keys for programmatic access to Olivine.</p>
-        <router-link to="/api-keys" class="btn-primary">Manage API Keys</router-link>
+        <router-link to="/integrations" class="btn-primary">Manage Integrations</router-link>
       </section>
       
       <!-- Danger Zone -->

@@ -13,19 +13,35 @@ class ApiService {
       baseURL: API_URL,
       withCredentials: false
     });
-    this.ws = null;
-    this.flowSubscriptions = new Map();
+    // Add interceptor to automatically add Authorization header
+    this.api.interceptors.request.use(config => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            config.headers.Authorization = `Bearer ${token}`;
+        }
+        return config;
+    }, error => {
+        return Promise.reject(error);
+    });
+    
+    // NOTE: The WebSocket connection logic previously here might be better handled 
+    //       by streamingService.js directly, or needs careful state management 
+    //       if kept within ApiService alongside REST calls.
+    //       Removing WS properties from here for now to avoid confusion.
+    // this.ws = null; 
+    // this.flowSubscriptions = new Map();
   }
 
   // Auth methods
   setAuthToken(token) {
     if (token) {
-      this.api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+      // Header is now set via interceptor, just store token
       localStorage.setItem('token', token);
     } else {
-      delete this.api.defaults.headers.common['Authorization'];
       localStorage.removeItem('token');
     }
+    // Re-initialize Axios instance or clear defaults if needed upon logout,
+    // although interceptor handles adding header based on localStorage presence.
   }
 
   // Alias for backward compatibility
@@ -64,110 +80,106 @@ class ApiService {
 
   logout() {
     this.setAuthToken(null);
-    this.disconnectWebSocket();
+    // Disconnect WebSocket if managed elsewhere (e.g., streamingService)
+    // streamingService.disconnect(); 
   }
 
-  // Flow methods
-  async getFlows() {
-    const response = await this.api.get('/api/flows');
+  // Agent/Flow methods (Now pointing to actual API endpoints)
+  async getFlows() { // Fetches Agents
+    const response = await this.api.get('/api/flows'); 
     return response.data;
   }
 
-  async getFlow(flowId) {
+  async getFlow(flowId) { // Fetches specific Agent details
     const response = await this.api.get(`/api/flows/${flowId}`);
     return response.data;
   }
 
-  async createFlow(flowData) {
+  async createFlow(flowData) { // Generic - might not be used if using createFlowFromTemplate
     const response = await this.api.post('/api/flows', flowData);
     return response.data;
   }
 
-  async updateFlow(flowId, flowData) {
+  async updateFlow(flowId, flowData) { // Updates Agent
     const response = await this.api.put(`/api/flows/${flowId}`, flowData);
     return response.data;
   }
 
-  async deleteFlow(flowId) {
+  async deleteFlow(flowId) { // Deletes Agent
     await this.api.delete(`/api/flows/${flowId}`);
+    // Return status or confirmation if needed
   }
 
-  // WebSocket methods
-  connectWebSocket() {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-
-    this.ws = new WebSocket(`${WS_URL}?token=${token}`);
-
-    this.ws.onopen = () => {
-      console.log('WebSocket connected');
-      // Resubscribe to flows
-      this.flowSubscriptions.forEach((callback, flowId) => {
-        this.subscribeToFlow(flowId, callback);
-      });
-    };
-
-    this.ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      
-      if (data.type === 'flow_result') {
-        const callback = this.flowSubscriptions.get(data.flowId);
-        if (callback) {
-          callback(data.data);
-        }
-      }
-    };
-
-    this.ws.onclose = () => {
-      console.log('WebSocket disconnected');
-      // Attempt to reconnect after delay
-      setTimeout(() => this.connectWebSocket(), 5000);
-    };
-
-    this.ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
-    };
-  }
-
-  disconnectWebSocket() {
-    if (this.ws) {
-      this.ws.close();
-      this.ws = null;
-    }
-    this.flowSubscriptions.clear();
-  }
-
-  subscribeToFlow(flowId, callback) {
-    this.flowSubscriptions.set(flowId, callback);
-    
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      this.ws.send(JSON.stringify({
-        type: 'subscribe_flow',
-        flowId
-      }));
-    }
-  }
-
-  unsubscribeFromFlow(flowId) {
-    this.flowSubscriptions.delete(flowId);
-  }
-
-  // Flow execution
-  async triggerFlow(flowId, inputs) {
-    const response = await this.api.post(`/api/flows/${flowId}/trigger`, { inputs });
+  // Agent & Conversation methods (Now using actual API calls)
+  async getAgentConversations(agentId) {
+    // TODO: Verify this endpoint exists on the backend
+    const response = await this.api.get(`/api/agents/${agentId}/conversations`);
     return response.data;
   }
 
-  // Flow templates
+  async createAgentConversation(agentId, conversationData) {
+    // TODO: Verify this endpoint exists on the backend
+    const response = await this.api.post(`/api/agents/${agentId}/conversations`, conversationData);
+    return response.data;
+  }
+
+  async getConversationMessages(conversationId) {
+    // TODO: Verify this endpoint exists on the backend
+    const response = await this.api.get(`/api/conversations/${conversationId}/messages`);
+    return response.data;
+  }
+
+  async createMessage(conversationId, messageData) {
+    // TODO: Verify this endpoint exists on the backend (and if it's needed)
+     // This might not be needed if the backend/flow execution handles message persistence.
+     const response = await this.api.post(`/api/conversations/${conversationId}/messages`, messageData);
+     return response.data;
+  }
+
+  // Flow templates (Now using actual API calls)
   async getFlowTemplates() {
     const response = await this.api.get('/api/flows/templates');
     return response.data;
   }
 
-  async createFlowFromTemplate(templateId, customization) {
+  async createFlowFromTemplate(templateId, customization) { // Creates Agent from template
     const response = await this.api.post(`/api/flows/templates/${templateId}`, customization);
     return response.data;
   }
+  
+   // Integrations / Credentials (Implement as needed)
+   async getCredentials() {
+       // TODO: Verify this endpoint exists on the backend
+       // console.warn("API CALL [PLACEHOLDER]: GET /api/integrations/credentials");
+       // await new Promise(resolve => setTimeout(resolve, 300));
+       // return [{id: 'cred1', type: 'API Key', name: 'Mock OpenAI Key', created_at: new Date().toISOString()}];
+       const response = await this.api.get('/api/integrations/credentials');
+       return response.data;
+   }
+   
+   async createApiKey(keyData) {
+       // TODO: Replace with actual API call: POST /api/integrations/api-keys
+       console.warn("API CALL [PLACEHOLDER]: POST /api/integrations/api-keys", keyData);
+       await new Promise(resolve => setTimeout(resolve, 500));
+       return {id: `key-${Date.now()}`, type: 'API Key', ...keyData, created_at: new Date().toISOString()};
+   }
+   
+   async deleteCredential(credentialId) {
+       // TODO: Replace with actual API call: DELETE /api/integrations/credentials/{credentialId}
+       console.warn(`API CALL [PLACEHOLDER]: DELETE /api/integrations/credentials/${credentialId}`);
+       await new Promise(resolve => setTimeout(resolve, 200));
+       return { success: true };
+   }
+   
+   async startOAuthFlow(provider) {
+        // TODO: Replace with actual API call: GET /api/integrations/oauth/start?provider={provider}
+        // This endpoint should return the redirect URL
+        console.warn(`API CALL [PLACEHOLDER]: GET /api/integrations/oauth/start?provider=${provider}`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        // Simulate redirect URL - in reality, the backend provides this
+        return { redirectUrl: `/login?mock_oauth_provider=${provider}` }; 
+   }
+
 }
 
 export default new ApiService(); 

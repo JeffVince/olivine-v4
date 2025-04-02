@@ -111,36 +111,74 @@
     <div v-if="showExecuteModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Execute Flow</h2>
-          <button class="btn-close" @click="showExecuteModal = false">×</button>
+          <h2>Execute Flow: {{ flow?.name }}</h2>
+          <button class="btn-close" @click="closeExecuteModal">×</button>
         </div>
         
         <div class="modal-body">
           <form @submit.prevent="executeFlow">
+            <!-- Integration Selection -->
             <div class="form-group">
-              <label for="flowInput">Input</label>
-              <textarea 
-                id="flowInput" 
-                v-model="flowInput" 
-                placeholder="Enter input as JSON, e.g. { &quot;query&quot;: &quot;What is AI?&quot; }"
+                <label for="integrationSelect">Credential to Use</label>
+                <select id="integrationSelect" v-model="selectedIntegrationId" required>
+                    <option disabled value="">-- Select a credential --</option>
+                    <option
+                        v-for="integration in availableIntegrations"
+                        :key="integration.id"
+                        :value="integration.id"
+                        :disabled="integration.status !== 'active' && integration.status !== 'connected'"
+                    >
+                        {{ integration.name || integration.service_name }} ({{ integration.type }})
+                         <span v-if="integration.status !== 'active' && integration.status !== 'connected'">
+                            [{{ integration.status }}]
+                         </span>
+                    </option>
+                </select>
+                 <small v-if="integrationsLoading">Loading credentials...</small>
+                 <small v-else-if="!integrationsLoading && availableIntegrations.length === 0">
+                    No credentials found. <router-link to="/integrations">Add one here</router-link>.
+                 </small>
+                 <small v-else>Select the credential (API key or OAuth connection) required by this flow.</small>
+                 <p v-if="integrationError" class="form-error">{{ integrationError }}</p>
+            </div>
+
+            <div class="form-group">
+              <label for="flowInput">Input Variables (JSON)</label>
+              <textarea
+                id="flowInput"
+                v-model="flowInput"
+                placeholder='Enter input variables as JSON, e.g., { "query": "What is AI?" }'
                 rows="5"
               ></textarea>
+              <small>These variables will be passed to the flow. The selected credential will be injected automatically.</small>
               <p v-if="inputError" class="form-error">{{ inputError }}</p>
             </div>
-            
+
+            <!-- Optional: Override Field Name -->
+            <div class="form-group">
+                 <label for="overrideFieldName">Credential Field Name (Optional)</label>
+                 <input
+                    type="text"
+                    id="overrideFieldName"
+                    v-model="overrideFieldName"
+                    placeholder="e.g., custom_api_key"
+                 />
+                 <small>Override the default name used to inject the credential (e.g., if your flow expects 'my_openai_key' instead of 'openai_api_key').</small>
+             </div>
+
             <div class="form-actions">
-              <button 
-                type="button" 
-                class="btn-secondary" 
-                @click="showExecuteModal = false"
+              <button
+                type="button"
+                class="btn-secondary"
+                @click="closeExecuteModal"
               >
                 Cancel
               </button>
-              
-              <button 
-                type="submit" 
-                class="btn-primary" 
-                :disabled="executionLoading"
+
+              <button
+                type="submit"
+                class="btn-primary"
+                :disabled="executionLoading || !selectedIntegrationId"
               >
                 {{ executionLoading ? 'Running...' : 'Execute' }}
               </button>
@@ -221,6 +259,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
+import axios from 'axios'; // Assuming axios is used for API calls
 
 const route = useRoute();
 const router = useRouter();
@@ -238,6 +277,11 @@ const executionResults = ref([]);
 const shareEmail = ref('');
 const sharePermission = ref('read');
 const shareLoading = ref(false);
+const selectedIntegrationId = ref(''); // For the dropdown
+const availableIntegrations = ref([]); // To store fetched integrations
+const integrationsLoading = ref(false);
+const integrationError = ref('');
+const overrideFieldName = ref(''); // Optional override for credential field name
 
 // Lifecycle hooks
 onMounted(async () => {
@@ -250,6 +294,7 @@ onMounted(async () => {
   }
   
   await loadFlow(flowId);
+  await loadIntegrations(); // Load integrations when component mounts
 });
 
 // Methods
@@ -290,42 +335,127 @@ function formatDateTime(dateStr) {
   return date.toLocaleString();
 }
 
+// Fetch available integrations
+async function loadIntegrations() {
+  if (!authToken.value) {
+      integrationError.value = 'Authentication required to load credentials.';
+      return;
+  }
+  integrationsLoading.value = true;
+  integrationError.value = '';
+  try {
+    const response = await axios.get('/api/integrations', {
+      headers: { 'Authorization': `Bearer ${authToken.value}` }
+    });
+    availableIntegrations.value = response.data;
+  } catch (err) {
+    console.error('Failed to load integrations:', err);
+    integrationError.value = err.response?.data?.message || 'Failed to load credentials.';
+    availableIntegrations.value = []; // Clear list on error
+  } finally {
+    integrationsLoading.value = false;
+  }
+}
+
+// Open execute modal and potentially refresh integrations
+function openExecuteModal() {
+    showExecuteModal.value = true;
+    // Reset form fields
+    selectedIntegrationId.value = '';
+    flowInput.value = '{}';
+    inputError.value = '';
+    overrideFieldName.value = '';
+    // Optionally re-fetch integrations every time modal opens
+    // loadIntegrations();
+}
+
+function closeExecuteModal() {
+    showExecuteModal.value = false;
+}
+
 async function executeFlow() {
+  let inputVariables = {};
   // Validate JSON input
   try {
-    JSON.parse(flowInput.value);
+    inputVariables = JSON.parse(flowInput.value || '{}'); // Ensure it's an object
+    if (typeof inputVariables !== 'object' || inputVariables === null) {
+        throw new Error('Input must be a valid JSON object.');
+    }
   } catch (e) {
-    inputError.value = 'Invalid JSON input';
+    inputError.value = e.message || 'Invalid JSON input.';
     return;
   }
-  
+
+  // Validate integration selection
+  if (!selectedIntegrationId.value) {
+      integrationError.value = 'Please select a credential to use.';
+      return;
+  }
+
   inputError.value = '';
+  integrationError.value = '';
   executionLoading.value = true;
-  
+
+  const currentExecution = {
+       id: Date.now(), // Simple temporary ID
+       status: 'running',
+       timestamp: new Date().toISOString(),
+       result: null,
+       error: null
+  };
+  executionResults.value.unshift(currentExecution);
+
   try {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 2000));
-    
-    // Add result to the list
-    executionResults.value.unshift({
-      status: 'completed',
-      timestamp: new Date().toISOString(),
-      result: {
-        message: 'Flow executed successfully',
-        data: JSON.parse(flowInput.value)
-      }
+    if (!authToken.value) {
+      throw new Error('Authentication token not found.');
+    }
+
+    const payload = {
+        flowId: flow.value.flow_id,
+        integrationId: selectedIntegrationId.value,
+        inputVariables: inputVariables,
+    };
+    // Only include overrideFieldName if it's provided
+    if (overrideFieldName.value && overrideFieldName.value.trim()) {
+        payload.overrideFieldName = overrideFieldName.value.trim();
+    }
+
+    const response = await axios.post('/api/flows/execute', payload, {
+        headers: {
+            'Authorization': `Bearer ${authToken.value}`,
+            'Content-Type': 'application/json'
+        }
     });
-    
-    // Close modal
-    showExecuteModal.value = false;
+
+    // Update the specific execution result
+    const resultIndex = executionResults.value.findIndex(r => r.id === currentExecution.id);
+    if (resultIndex !== -1) {
+        executionResults.value[resultIndex].status = 'completed';
+        executionResults.value[resultIndex].result = response.data; // Assuming Langflow returns JSON
+    }
+
+    // Close modal on success
+    closeExecuteModal();
+
   } catch (err) {
     console.error('Failed to execute flow:', err);
-    
-    executionResults.value.unshift({
-      status: 'failed',
-      timestamp: new Date().toISOString(),
-      error: err.message || 'Failed to execute flow'
-    });
+    const errorMessage = err.response?.data?.message || err.message || 'Failed to execute flow';
+
+    // Update the specific execution result with error
+    const resultIndex = executionResults.value.findIndex(r => r.id === currentExecution.id);
+     if (resultIndex !== -1) {
+        executionResults.value[resultIndex].status = 'failed';
+        executionResults.value[resultIndex].error = errorMessage;
+    } else {
+        // Fallback if somehow the placeholder wasn't found
+         executionResults.value.unshift({
+             status: 'failed',
+             timestamp: new Date().toISOString(),
+             error: errorMessage
+         });
+    }
+     // Optionally keep modal open on error? Or display error message elsewhere?
+     // For now, we don't close the modal on error
   } finally {
     executionLoading.value = false;
   }

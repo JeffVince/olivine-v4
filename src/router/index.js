@@ -7,14 +7,13 @@ const Login = () => import('../views/Login.vue');
 const SignUp = () => import('../views/SignUp.vue');
 const VerifyEmail = () => import('../views/VerifyEmail.vue');
 const Dashboard = () => import('../views/Dashboard.vue');
-const FlowDetail = () => import('../views/FlowDetail.vue');
 const NotFound = () => import('../views/NotFound.vue');
 const ForgotPassword = () => import('../views/ForgotPassword.vue');
 const ResetPassword = () => import('../views/ResetPassword.vue');
-const Agents = () => import('../views/Agents.vue');
 const Conversation = () => import('../views/Conversation.vue');
-const ApiKeys = () => import('../views/ApiKeys.vue');
 const Account = () => import('../views/Account.vue');
+const Integrations = () => import('../views/Integrations.vue');
+const AgentSettings = () => import('../views/AgentSettings.vue');
 
 const routes = [
   {
@@ -60,27 +59,23 @@ const routes = [
     meta: { requiresAuth: true }
   },
   {
-    path: '/flows/:id',
-    name: 'FlowDetail',
-    component: FlowDetail,
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/agents',
-    name: 'Agents',
-    component: Agents,
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/agents/:agentId/chat/:conversationId?',
     name: 'Conversation',
     component: Conversation,
+    props: true,
     meta: { requiresAuth: true }
   },
   {
-    path: '/api-keys',
-    name: 'ApiKeys',
-    component: ApiKeys,
+    path: '/agents/:agentId/settings',
+    name: 'AgentSettings',
+    component: AgentSettings,
+    props: true,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/integrations',
+    name: 'Integrations',
+    component: Integrations,
     meta: {
       requiresAuth: true,
       title: 'API Keys'

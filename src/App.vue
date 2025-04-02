@@ -34,7 +34,9 @@ const isAuthPage = computed(() => {
           
           <template v-if="isAuthenticated">
             <router-link to="/dashboard" class="navbar-link">Dashboard</router-link>
-            <router-link to="/api-keys" class="navbar-link">API Keys</router-link>
+            <router-link to="/integrations" class="navbar-link">Integrations</router-link>
+            <router-link to="/agents" class="navbar-link">Agents</router-link>
+            <router-link to="/conversation" class="navbar-link">Conversation</router-link>
             <div class="dropdown">
               <button class="dropdown-toggle">
                 {{ user ? user.email : 'Account' }}

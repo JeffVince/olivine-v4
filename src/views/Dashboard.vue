@@ -1,122 +1,108 @@
 <template>
   <div class="dashboard">
-    <h1>Your Flows</h1>
+    <h1>Your Agents</h1>
     
-    <div v-if="error" class="error-message">{{ error }}</div>
+    <div v-if="error" class="alert alert-danger">
+      {{ error }}
+    </div>
     
     <div class="dashboard-actions">
-      <button class="btn-primary" @click="showCreateFlowModal = true">
-        Create New Flow
+      <button class="btn-primary" @click="openCreateAgentModal">
+        Create New Agent
       </button>
     </div>
     
-    <div v-if="loading" class="loading">
-      <p>Loading flows...</p>
+    <div v-if="loading" class="loading-indicator">
+      <div class="spinner"></div> 
+      <p>Loading agents...</p>
     </div>
     
-    <div v-else-if="flows.length === 0" class="empty-state">
-      <h2>No flows found</h2>
-      <p>Create your first flow to get started</p>
+    <div v-else-if="!error && agents.length === 0" class="empty-state">
+      <h2>No agents found</h2>
+      <p>Create your first agent to get started</p>
     </div>
     
-    <div v-else class="flow-grid">
+    <div v-else class="agent-grid">
       <div 
-        v-for="flow in flows" 
-        :key="flow.flow_id" 
-        class="flow-card"
-        @click="viewFlow(flow.flow_id)"
+        v-for="agent in agents" 
+        :key="agent.flow_id" 
+        class="agent-card"
+        @click="viewAgent(agent.flow_id)"
       >
-        <div class="flow-card-header">
-          <h3>{{ flow.name }}</h3>
-          <span :class="['flow-permission', flow.permission]">{{ flow.permission }}</span>
+        <div class="agent-card-header">
+          <h3>{{ agent.name }}</h3>
+          <span :class="['agent-permission', agent.permission]">{{ agent.permission }}</span>
         </div>
         
-        <p class="flow-description">{{ flow.description || 'No description provided' }}</p>
+        <p class="agent-description">{{ agent.description || 'No description provided' }}</p>
         
-        <div class="flow-card-footer">
-          <div class="flow-meta">
-            <span class="flow-date">Created: {{ formatDate(flow.created_at) }}</span>
+        <div class="agent-card-footer">
+          <div class="agent-meta">
+            <span class="agent-date">Created: {{ formatDate(agent.created_at) }}</span>
           </div>
           
-          <div class="flow-actions">
-            <button 
-              class="btn-icon" 
-              @click.stop="executeFlow(flow.flow_id)"
-              title="Execute flow"
-            >
-              ▶
-            </button>
-            
-            <button 
-              v-if="flow.permission === 'owner'" 
-              class="btn-icon" 
-              @click.stop="showShareModal(flow)"
-              title="Share flow"
-            >
-              🔗
-            </button>
-          </div>
+          <!-- Actions removed for now, will be added to agent chat view -->
+          <!-- <div class="agent-actions"> ... </div> -->
         </div>
       </div>
     </div>
     
-    <!-- Create Flow Modal -->
-    <div v-if="showCreateFlowModal" class="modal">
+    <!-- Create Agent Modal -->
+    <div v-if="showCreateAgentModal" class="modal">
       <div class="modal-content">
         <div class="modal-header">
-          <h2>Create New Flow</h2>
-          <button class="btn-close" @click="showCreateFlowModal = false">×</button>
+          <h2>Create New Agent</h2>
+          <button class="btn-close" @click="showCreateAgentModal = false">×</button>
         </div>
         
         <div class="modal-body">
-          <form @submit.prevent="createNewFlow">
+          <form @submit.prevent="createNewAgent">
             <div class="form-group">
-              <label for="flowName">Flow Name</label>
+              <label for="agentName">Agent Name</label>
               <input 
                 type="text" 
-                id="flowName" 
-                v-model="newFlow.name" 
+                id="agentName" 
+                v-model="newAgent.name" 
                 required 
-                placeholder="Enter flow name"
+                placeholder="Enter agent name"
               />
+            </div>
+
+            <div class="form-group">
+              <label for="flowTemplate">Base Flow Template</label>
+              <select 
+                id="flowTemplate" 
+                v-model="newAgent.templateId" 
+                required
+                :disabled="templateLoading"
+              >
+                <option disabled value="">{{ templateLoading ? 'Loading templates...' : 'Select a flow template' }}</option>
+                <option v-if="templateError">Error loading templates</option>
+                <option v-for="template in flowTemplates" :key="template.id" :value="template.id">
+                  {{ template.name }}
+                </option>
+              </select>
+              <p v-if="templateError" class="form-error">{{ templateError }}</p>
             </div>
             
             <div class="form-group">
-              <label for="langflowId">Langflow ID</label>
-              <input 
-                type="text" 
-                id="langflowId" 
-                v-model="newFlow.langflowId" 
-                required 
-                placeholder="Enter Langflow ID"
-              />
-            </div>
-            
-            <div class="form-group">
-              <label for="description">Description</label>
+              <label for="description">Description (Optional)</label>
               <textarea 
                 id="description" 
-                v-model="newFlow.description" 
-                placeholder="Enter flow description"
+                v-model="newAgent.description" 
+                placeholder="Enter agent description"
                 rows="3"
               ></textarea>
             </div>
             
-            <div class="form-group">
-              <label class="checkbox-label">
-                <input 
-                  type="checkbox" 
-                  v-model="newFlow.isPublic" 
-                />
-                Make this flow public
-              </label>
-            </div>
+            <!-- Removed public checkbox for simplicity for now -->
+            <!-- <div class="form-group"> ... </div> -->
             
             <div class="form-actions">
               <button 
                 type="button" 
                 class="btn-secondary" 
-                @click="showCreateFlowModal = false"
+                @click="showCreateAgentModal = false"
               >
                 Cancel
               </button>
@@ -124,9 +110,9 @@
               <button 
                 type="submit" 
                 class="btn-primary" 
-                :disabled="createLoading"
+                :disabled="createLoading || templateLoading || !newAgent.templateId"
               >
-                {{ createLoading ? 'Creating...' : 'Create Flow' }}
+                {{ createLoading ? 'Creating...' : 'Create Agent' }}
               </button>
             </div>
           </form>
@@ -137,54 +123,87 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
+import apiService from '@/services/api'; // Import the api service
 
 const router = useRouter();
 
 // Reactive state
-const showCreateFlowModal = ref(false);
+const showCreateAgentModal = ref(false);
 const createLoading = ref(false);
-const flows = ref([]);
+const agents = ref([]); // Renamed from flows
 const loading = ref(true);
 const error = ref(null);
+const flowTemplates = ref([]);
+const templateLoading = ref(false);
+const templateError = ref(null);
 
-const newFlow = ref({
+const newAgent = ref({ // Renamed from newFlow
   name: '',
-  langflowId: '',
+  templateId: '', // Changed from langflowId to templateId
   description: '',
-  isPublic: false
+  // isPublic: false // Removed for now
 });
 
-// Mock data for demo purposes
+// Fetch agents on mount
 onMounted(async () => {
+  await fetchAgents();
+});
+
+async function fetchAgents() {
+  loading.value = true;
+  error.value = null;
   try {
-    // Simulating API call with timeout
-    setTimeout(() => {
-      flows.value = [
-        {
-          flow_id: '1',
-          name: 'Customer Support Bot',
-          description: 'AI assistant that helps with customer queries',
-          permission: 'owner',
-          created_at: new Date().toISOString()
-        },
-        {
-          flow_id: '2',
-          name: 'Content Summarizer',
-          description: 'Summarizes long articles and documents',
-          permission: 'read',
-          created_at: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
-        }
-      ];
-      loading.value = false;
-    }, 1000);
+    // Replace mock data with API call
+    const fetchedAgents = await apiService.getFlows(); // Uses existing getFlows which maps to /api/flows
+    agents.value = fetchedAgents;
   } catch (err) {
-    console.error('Failed to fetch flows:', err);
-    error.value = 'Failed to load flows. Please try again.';
+    console.error('Failed to fetch agents:', err);
+    error.value = 'Failed to load agents. Please try again.';
+    // Handle specific error messages if available
+    if (err.response && err.response.data && err.response.data.detail) {
+      error.value = `Failed to load agents: ${err.response.data.detail}`;
+    } else if (err.message) {
+       error.value = `Failed to load agents: ${err.message}`;
+    }
+  } finally {
     loading.value = false;
   }
-});
+}
+
+async function fetchFlowTemplates() {
+  templateLoading.value = true;
+  templateError.value = null;
+  flowTemplates.value = []; // Clear previous templates
+  try {
+    // Fetch flow templates from the API
+    const templates = await apiService.getFlowTemplates(); // Assuming this fetches Langflow flows
+    // Assuming templates have 'id' and 'name' properties
+    flowTemplates.value = templates.map(t => ({ id: t.id, name: t.name })); // Adapt based on actual API response structure
+    if (!flowTemplates.value || flowTemplates.value.length === 0) {
+        templateError.value = "No flow templates found.";
+    }
+  } catch (err) {
+    console.error('Failed to fetch flow templates:', err);
+    templateError.value = 'Failed to load flow templates.';
+     if (err.response && err.response.data && err.response.data.detail) {
+      templateError.value = `Failed to load templates: ${err.response.data.detail}`;
+    } else if (err.message) {
+       templateError.value = `Failed to load templates: ${err.message}`;
+    }
+  } finally {
+    templateLoading.value = false;
+  }
+}
+
+function openCreateAgentModal() {
+  // Reset form
+  newAgent.value = { name: '', templateId: '', description: '' };
+  showCreateAgentModal.value = true;
+  // Fetch templates when modal is opened
+  fetchFlowTemplates();
+}
 
 // Methods
 function formatDate(dateStr) {
@@ -193,52 +212,53 @@ function formatDate(dateStr) {
   return date.toLocaleDateString();
 }
 
-function viewFlow(flowId) {
-  router.push(`/flows/${flowId}`);
+function viewAgent(agentId) { // Renamed from viewFlow
+  // Navigate to agent detail/chat view
+  router.push(`/agents/${agentId}/chat`); // Updated path
 }
 
-function executeFlow(flowId) {
-  console.log('Executing flow:', flowId);
-  // Prevent navigation to flow detail page
-  event.stopPropagation();
-}
+// Removed executeFlow and showShareModal as they are not relevant here anymore
 
-function showShareModal(flow) {
-  console.log('Share modal for flow:', flow);
-  // Prevent navigation to flow detail page
-  event.stopPropagation();
-}
-
-async function createNewFlow() {
+async function createNewAgent() { // Renamed from createNewFlow
+  if (!newAgent.value.templateId) {
+    // Should be caught by disabled button, but check anyway
+    console.error("No template selected");
+    return; 
+  }
   createLoading.value = true;
+  error.value = null; // Clear previous errors
   try {
-    console.log('Creating new flow:', newFlow.value);
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 1500));
+    console.log('Creating new agent from template:', newAgent.value.templateId);
     
-    // Add flow to list
-    const newFlowObj = {
-      flow_id: Date.now().toString(),
-      name: newFlow.value.name,
-      description: newFlow.value.description,
-      permission: 'owner',
-      created_at: new Date().toISOString()
+    // Prepare customization data (name, description)
+    const customization = {
+      name: newAgent.value.name,
+      description: newAgent.value.description
+      // Add other customization fields if needed by the API
     };
-    
-    flows.value.unshift(newFlowObj);
+
+    // Call the API to create agent from template
+    const createdAgent = await apiService.createFlowFromTemplate(
+      newAgent.value.templateId, 
+      customization
+    );
+
+    // Add the new agent to the beginning of the list
+    agents.value.unshift(createdAgent);
     
     // Reset form and close modal
-    newFlow.value = {
-      name: '',
-      langflowId: '',
-      description: '',
-      isPublic: false
-    };
-    
-    showCreateFlowModal.value = false;
+    showCreateAgentModal.value = false;
+
   } catch (err) {
-    console.error('Failed to create flow:', err);
-    error.value = 'Failed to create flow. Please try again.';
+    console.error('Failed to create agent:', err);
+    // Display error to the user (e.g., using a toast notification or updating the error ref)
+     if (err.response && err.response.data && err.response.data.detail) {
+      error.value = `Failed to create agent: ${err.response.data.detail}`;
+    } else if (err.message) {
+       error.value = `Failed to create agent: ${err.message}`;
+    } else {
+       error.value = 'An unexpected error occurred while creating the agent.';
+    }
   } finally {
     createLoading.value = false;
   }
@@ -263,13 +283,13 @@ h1 {
   justify-content: flex-end;
 }
 
-.flow-grid {
+.agent-grid { /* Renamed */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
 }
 
-.flow-card {
+.agent-card { /* Renamed */
   background-color: white;
   border-radius: 8px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -278,41 +298,41 @@ h1 {
   transition: transform 0.2s, box-shadow 0.2s;
 }
 
-.flow-card:hover {
+.agent-card:hover { /* Renamed */
   transform: translateY(-4px);
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.flow-card-header {
+.agent-card-header { /* Renamed */
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
 }
 
-.flow-card-header h3 {
+.agent-card-header h3 { /* Renamed */
   margin: 0;
   font-size: 1.25rem;
 }
 
-.flow-permission {
+.agent-permission { /* Renamed */
   font-size: 0.75rem;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   background-color: var(--bg-light);
 }
 
-.flow-permission.owner {
+.agent-permission.owner { /* Renamed */
   background-color: var(--primary-bg);
   color: var(--primary-color);
 }
 
-.flow-permission.read {
+.agent-permission.read { /* Renamed */
   background-color: var(--bg-light);
   color: var(--text-secondary);
 }
 
-.flow-description {
+.agent-description { /* Renamed */
   margin-bottom: 1.5rem;
   color: var(--text-secondary);
   font-size: 0.9rem;
@@ -323,53 +343,47 @@ h1 {
   height: 2.7rem;
 }
 
-.flow-card-footer {
+.agent-card-footer { /* Renamed */
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 0.85rem;
 }
 
-.flow-date {
+.agent-meta { /* Added for structure */
+  /* styles if needed */
+}
+
+.agent-date { /* Renamed */
   color: var(--text-secondary);
 }
 
-.flow-actions {
-  display: flex;
-  gap: 0.5rem;
+/* Removed .flow-actions styles */
+
+/* Styles for form-error */
+.form-error {
+  color: var(--error-color); /* Make sure --error-color is defined in your CSS vars */
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
 }
 
-.btn-icon {
-  background-color: transparent;
-  border: none;
-  font-size: 1.2rem;
-  cursor: pointer;
-  padding: 0.25rem;
+/* Add styles for select dropdown if needed */
+select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
   border-radius: 4px;
-}
-
-.btn-icon:hover {
-  background-color: var(--bg-light);
-}
-
-.empty-state {
-  text-align: center;
-  padding: 3rem;
   background-color: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  font-size: 1rem;
+  margin-top: 0.5rem;
 }
 
-.empty-state h2 {
-  margin-bottom: 0.5rem;
-  color: var(--text-primary);
+select:disabled {
+  background-color: var(--bg-light);
+  cursor: not-allowed;
 }
 
-.empty-state p {
-  color: var(--text-secondary);
-}
-
-/* Modal styles */
+/* Ensure modal styles are present */
 .modal {
   position: fixed;
   top: 0;
@@ -433,5 +447,51 @@ h1 {
 
 .checkbox-label input {
   width: auto;
+}
+
+/* Add styles for alert */
+.alert {
+  padding: 1rem 1.5rem;
+  margin-bottom: 1.5rem;
+  border: 1px solid transparent;
+  border-radius: 4px;
+}
+
+.alert-danger {
+  color: #842029; /* Darker red text */
+  background-color: #f8d7da; /* Light red background */
+  border-color: #f5c2c7; /* Red border */
+}
+
+/* Add styles for loading indicator */
+.loading-indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 3rem;
+  text-align: center;
+  color: var(--text-secondary);
+}
+
+.spinner {
+  border: 4px solid rgba(0,0,0,.1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border-left-color: var(--primary-color);
+  animation: spin 1s ease infinite;
+  margin-bottom: 1rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Adjust modal error display */
+.modal-body .form-error {
+  margin-top: 0.5rem;
+  margin-bottom: 1rem; /* Add space below error */
 }
 </style> 
