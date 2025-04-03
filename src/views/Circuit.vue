@@ -8,14 +8,14 @@
       <div class="connection connection-4"></div>
     </div>
 
-    <!-- Floating Navigation Button -->
-    <div class="floating-nav">
-      <router-link to="/" class="nav-circle">
-        <span class="nav-arrow">←</span>
-      </router-link>
-    </div>
-
     <div class="hero">
+      <!-- Floating Navigation Button -->
+      <div class="floating-nav">
+        <router-link to="/" class="nav-circle" v-if="showNavArrow">
+          <span class="nav-arrow">←</span>
+        </router-link>
+      </div>
+      
       <div class="hero-content">
         <div class="hero-circle"></div>
         <h1>OLIVINE <span class="accent">CIRCUIT</span></h1>
@@ -379,6 +379,15 @@ import { useAuthStore } from '../store/auth';
 
 const authStore = useAuthStore();
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Window size tracking
+const windowWidth = ref(window.innerWidth);
+const showNavArrow = computed(() => windowWidth.value > 900);
+
+// Handle window resize
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
 
 // --- Configuration ---
 const NODE_COUNT = {
@@ -1117,6 +1126,9 @@ onMounted(() => {
       }
   });
   window.addEventListener('resize', initializeNodes);
+  
+  // Add resize event listener for nav arrow visibility
+  window.addEventListener('resize', handleResize);
 });
 
 onUnmounted(() => {
@@ -1124,6 +1136,9 @@ onUnmounted(() => {
     cancelAnimationFrame(animationFrameId);
   }
   window.removeEventListener('resize', initializeNodes);
+  
+  // Remove resize event listener for nav arrow visibility
+  window.removeEventListener('resize', handleResize);
 });
 
 // --- Streaming Control Methods ---
@@ -1228,8 +1243,8 @@ h1, h2, h3, h4, p {
 .connection-4 { top: 50%; left: 50%; width: 30%; transform: rotate(45deg); opacity: 0.25; }
 
 .floating-nav {
-  position: fixed;
-  left: 2rem;
+  position: absolute;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
   z-index: 1000;
@@ -1267,6 +1282,18 @@ h1, h2, h3, h4, p {
   overflow: hidden;
 }
 
+.hero:before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(61, 133, 244, 0.3) 0%, rgba(61, 133, 244, 0) 80%);
+  z-index: 1;
+  left: -35%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .hero-content {
   text-align: center;
   position: relative;
@@ -1274,8 +1301,8 @@ h1, h2, h3, h4, p {
 }
 
 .hero-circle {
-  width: 300px;
-  height: 300px;
+  width: 600px;
+  height: 600px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(255, 77, 94, 0.2) 0%, rgba(255, 77, 94, 0) 70%);
   position: absolute;
@@ -1692,8 +1719,10 @@ h1, h2, h3, h4, p {
   }
   
   .floating-nav {
-    right: 1rem;
-    bottom: 1rem;
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 

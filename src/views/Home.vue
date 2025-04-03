@@ -1,13 +1,13 @@
 <template>
   <div class="home-page" :class="{ 'slide-in': isActive }">
-    <!-- Floating Navigation Button -->
-    <div class="floating-nav">
-      <router-link to="/circuit" class="nav-circle">
-        <span class="nav-arrow">→</span>
-      </router-link>
-    </div>
-
     <div class="hero">
+      <!-- Floating Navigation Button -->
+      <div class="floating-nav">
+        <router-link to="/circuit" class="nav-circle" v-if="showNavArrow">
+          <span class="nav-arrow">→</span>
+        </router-link>
+      </div>
+      
       <div class="hero-content">
         <div class="hero-circle"></div>
         <h1>OLIVINE <span class="accent">STATION</span></h1>
@@ -255,7 +255,7 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue';
+import { computed, ref, onMounted, onUnmounted } from 'vue';
 import { useAuthStore } from '../store/auth';
 
 const authStore = useAuthStore();
@@ -267,11 +267,28 @@ const isAuthenticated = computed(() => authStore.isAuthenticated);
 const isActive = ref(false);
 const hoverNav = ref(false);
 
+// Window size tracking
+const windowWidth = ref(window.innerWidth);
+const showNavArrow = computed(() => windowWidth.value > 900);
+
+// Handle window resize
+const handleResize = () => {
+  windowWidth.value = window.innerWidth;
+};
+
 onMounted(() => {
   // Trigger slide-in animation after the component is mounted
   setTimeout(() => {
     isActive.value = true;
   }, 50);
+  
+  // Add resize event listener
+  window.addEventListener('resize', handleResize);
+});
+
+onUnmounted(() => {
+  // Remove resize event listener
+  window.removeEventListener('resize', handleResize);
 });
 </script>
 
@@ -338,6 +355,18 @@ h1, h2, h3, h4, p {
   overflow: hidden;
 }
 
+.hero:before {
+  content: "";
+  position: absolute;
+  width: 600px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(255, 77, 94, 0.3) 0%, rgba(255, 77, 94, 0) 60%);
+  z-index: 1;
+  right: -25%;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 .hero-content {
   text-align: center;
   position: relative;
@@ -345,8 +374,8 @@ h1, h2, h3, h4, p {
 }
 
 .hero-circle {
-  width: 300px;
-  height: 300px;
+  width: 600px;
+  height: 600px;
   border-radius: 50%;
   background: radial-gradient(circle, rgba(61, 133, 244, 0.2) 0%, rgba(61, 133, 244, 0) 70%);
   position: absolute;
@@ -691,17 +720,19 @@ h1, h2, h3, h4, p {
   }
   
   .floating-nav {
+    position: absolute;
     right: 2rem;
-    bottom: 2rem;
-    transform: none;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 
 /* Floating Navigation */
 .floating-nav {
-  position: fixed;
+  position: absolute;
   right: 2rem;
-  bottom: 2rem;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 1000;
 }
 
