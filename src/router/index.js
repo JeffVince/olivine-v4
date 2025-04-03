@@ -14,12 +14,19 @@ const Conversation = () => import('../views/Conversation.vue');
 const Account = () => import('../views/Account.vue');
 const Integrations = () => import('../views/Integrations.vue');
 const AgentSettings = () => import('../views/AgentSettings.vue');
+const Circuit = () => import('../views/Circuit.vue');
 
 const routes = [
   {
     path: '/',
     name: 'Home',
     component: Home,
+    meta: { requiresAuth: false }
+  },
+  {
+    path: '/circuit',
+    name: 'Circuit',
+    component: Circuit,
     meta: { requiresAuth: false }
   },
   {

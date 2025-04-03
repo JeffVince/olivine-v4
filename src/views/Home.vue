@@ -1,443 +1,730 @@
 <template>
-  <div class="home">
+  <div class="home-page" :class="{ 'slide-in': isActive }">
+    <!-- Floating Navigation Button -->
+    <div class="floating-nav">
+      <router-link to="/circuit" class="nav-circle">
+        <span class="nav-arrow">→</span>
+      </router-link>
+    </div>
+
     <div class="hero">
       <div class="hero-content">
-        <h1>Welcome to Olivine</h1>
-        <p class="hero-subtitle">Build, share, and execute AI workflows with ease</p>
+        <div class="hero-circle"></div>
+        <h1>OLIVINE <span class="accent">STATION</span></h1>
+        <p class="hero-subtitle">Connecting creative tools. Automating tedium. Amplifying talent.</p>
         
         <div class="hero-actions">
           <router-link v-if="!isAuthenticated" to="/login" class="btn-primary">
-            Get Started
+            ENTER
           </router-link>
           <router-link v-else to="/dashboard" class="btn-primary">
-            Go to Dashboard
+            DASHBOARD
           </router-link>
-          
-          <a href="#features" class="btn-secondary">
-            Learn More
-          </a>
         </div>
       </div>
     </div>
     
-    <section id="features" class="features">
-      <h2>Key Features</h2>
-      
-      <div class="feature-grid">
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="16 18 22 12 16 6"></polyline>
-              <polyline points="8 6 2 12 8 18"></polyline>
-            </svg>
-          </div>
-          <h3>Langflow Integration</h3>
-          <p>Create complex AI workflows using the powerful Langflow framework with an intuitive interface.</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-          </div>
-          <h3>Collaboration</h3>
-          <p>Share your workflows with team members and collaborate on AI solutions together.</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
-            </svg>
-          </div>
-          <h3>Real-time Execution</h3>
-          <p>Execute AI workflows in real-time and receive instant results through WebSocket connections.</p>
-        </div>
-        
-        <div class="feature-card">
-          <div class="feature-icon">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="3" y1="9" x2="21" y2="9"></line>
-              <line x1="9" y1="21" x2="9" y2="9"></line>
-            </svg>
-          </div>
-          <h3>Cloud Storage</h3>
-          <p>Securely store your workflows and data in the cloud for access from anywhere.</p>
+    <section class="manifesto">
+      <div class="container">
+        <div class="text-block">
+          <p>For film producers, creatives, and agents who value their craft over admin work. Olivine Station connects your existing tools through an invisible network of AI, enabling you to focus on creating, not coordinating.</p>
         </div>
       </div>
     </section>
-    
-    <section class="how-it-works">
-      <h2>How It Works</h2>
-      
-      <div class="steps">
-        <div class="step">
-          <div class="step-number">1</div>
-          <h3>Create an Account</h3>
-          <p>Sign up for an Olivine account to get started with your AI workflows.</p>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">2</div>
-          <h3>Build Your Flow</h3>
-          <p>Design your AI workflow using the intuitive interface backed by Langflow.</p>
-        </div>
-        
-        <div class="step">
-          <div class="step-number">3</div>
-          <h3>Execute & Share</h3>
-          <p>Run your flow to get AI-powered results and share with team members.</p>
+
+    <section class="tool-grid">
+      <div class="container">
+        <div class="section-label">INTEGRATIONS</div>
+        <div class="tool-items">
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">GOOGLE WORKSPACE</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">DROPBOX</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">MONDAY.COM</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">SLACK</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">XERO</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">QUICKBOOKS</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">OUTLOOK</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">FRAME.IO</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">AIRTABLE</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">ASANA</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">MERCURY</div>
+          </div>
+          <div class="tool-item">
+            <div class="tool-icon">
+              <div class="circle-icon"></div>
+            </div>
+            <div class="tool-name">DOCUSIGN</div>
+          </div>
         </div>
       </div>
     </section>
-    
-    <section class="showcase">
-      <h2>What You Can Build</h2>
-      
-      <div class="showcase-grid">
-        <div class="showcase-item">
-          <div class="showcase-image" style="background-color: #e0f7fa;"></div>
-          <h3>Customer Support Bots</h3>
-          <p>Create intelligent support bots that understand and respond to customer inquiries.</p>
-        </div>
-        
-        <div class="showcase-item">
-          <div class="showcase-image" style="background-color: #e8f5e9;"></div>
-          <h3>Document Analysis</h3>
-          <p>Extract insights and automate processing of documents with AI-powered analysis.</p>
-        </div>
-        
-        <div class="showcase-item">
-          <div class="showcase-image" style="background-color: #fff8e1;"></div>
-          <h3>Content Generation</h3>
-          <p>Generate high-quality content based on your specific needs and guidelines.</p>
+
+    <section class="column-section">
+      <div class="container">
+        <div class="column-grid">
+          <div class="column">
+            <div class="column-content">
+              <div class="section-label">APPROACH</div>
+              <h2>INVISIBLE<br>INTELLIGENCE</h2>
+              <p>Olivine doesn't add another platform to learn. It quietly connects the tools you already use, allowing them to communicate and automate through an invisible layer of AI.</p>
+            </div>
+          </div>
+          <div class="column">
+            <div class="column-content">
+              <div class="section-label">OBJECTIVE</div>
+              <h2>ELIMINATE<br>TEDIUM</h2>
+              <p>Creative time is valuable. Olivine removes hours of administrative work by automating the processes that typically consume a producer's day.</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
-    
-    <section class="cta">
-      <div class="cta-content">
-        <h2>Ready to Build AI Workflows?</h2>
-        <p>Join Olivine today and start creating powerful AI solutions.</p>
-        <router-link v-if="!isAuthenticated" to="/signup" class="btn-primary">
-          Create an Account
-        </router-link>
-        <router-link v-else to="/dashboard" class="btn-primary">
-          Go to Dashboard
-        </router-link>
+
+    <section class="systems-grid">
+      <div class="container">
+        <div class="section-label">INTELLIGENT SYSTEMS</div>
+        <div class="systems-items">
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>SCHEDULING</h3>
+            <p>Automatically coordinate calendars, check availability, generate call sheets, and send reminders across your preferred tools.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>FINANCIAL</h3>
+            <p>Connect invoicing, expense tracking, budgeting, and payment systems into a single automated financial workflow.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>DOCUMENTS</h3>
+            <p>Process contracts, briefs, and forms to extract key information and transform unstructured content into actionable data.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>TALENT</h3>
+            <p>Source, evaluate, and book talent while maintaining a rich database of contacts and past collaborations.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>PROCUREMENT</h3>
+            <p>Streamline vendor selection, location booking, and equipment rental through automated research and validation.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>COMMUNICATION</h3>
+            <p>Coordinate email, messaging, and notifications across platforms to ensure everyone stays informed.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>PRODUCTION</h3>
+            <p>Track shooting schedules, manage dailies, and coordinate post-production workflows seamlessly.</p>
+          </div>
+          <div class="system-item">
+            <div class="system-circle"></div>
+            <h3>COMPLIANCE</h3>
+            <p>Ensure permits, insurance, and legal requirements are organized, tracked, and completed on time.</p>
+          </div>
+        </div>
       </div>
     </section>
+
+    <section class="use-cases">
+      <div class="container">
+        <div class="section-label">USE CASES</div>
+        <div class="case-grid">
+          <div class="case">
+            <div class="case-number">01</div>
+            <h3>CALL SHEETS</h3>
+            <p>Generate detailed call sheets in minutes by connecting scheduling, contact, and location data across your tools, eliminating hours of manual coordination.</p>
+          </div>
+          <div class="case">
+            <div class="case-number">02</div>
+            <h3>TALENT SOURCING</h3>
+            <p>Automate shortlisting, availability checks, and communication management to find and secure the right talent without the endless email threads.</p>
+          </div>
+          <div class="case">
+            <div class="case-number">03</div>
+            <h3>INVOICE PROCESSING</h3>
+            <p>Transform your financial workflow by automatically handling invoices, expense tracking, and payment reconciliation across systems.</p>
+          </div>
+          <div class="case">
+            <div class="case-number">04</div>
+            <h3>CONTRACTS</h3>
+            <p>Automate contract creation, revision tracking, approval workflows, and signature collection while maintaining secure access controls.</p>
+          </div>
+          <div class="case">
+            <div class="case-number">05</div>
+            <h3>LOCATION SCOUTING</h3>
+            <p>Organize location data, permits, contacts, and availability information into a streamlined workflow for faster decisions.</p>
+          </div>
+          <div class="case">
+            <div class="case-number">06</div>
+            <h3>BUDGET TRACKING</h3>
+            <p>Connect real-time expense data with budget forecasts to maintain complete visibility and control over production finances.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="metrics">
+      <div class="container">
+        <div class="metrics-grid">
+          <div class="metric">
+            <div class="metric-value">83%</div>
+            <div class="metric-label">ADMIN TIME SAVED</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">60%</div>
+            <div class="metric-label">COORDINATION REDUCTION</div>
+          </div>
+          <div class="metric">
+            <div class="metric-value">3x</div>
+            <div class="metric-label">FASTER PRODUCTION CYCLES</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cta-section">
+      <div class="container">
+        <h2>RECLAIM YOUR CREATIVE TIME</h2>
+        <div class="cta-actions">
+          <router-link v-if="!isAuthenticated" to="/signup" class="btn-primary">
+            REQUEST ACCESS
+          </router-link>
+          <router-link v-else to="/dashboard" class="btn-primary">
+            ENTER STATION
+          </router-link>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, ref, onMounted } from 'vue';
 import { useAuthStore } from '../store/auth';
 
 const authStore = useAuthStore();
 
 // Computed properties
 const isAuthenticated = computed(() => authStore.isAuthenticated);
+
+// Animation states
+const isActive = ref(false);
+const hoverNav = ref(false);
+
+onMounted(() => {
+  // Trigger slide-in animation after the component is mounted
+  setTimeout(() => {
+    isActive.value = true;
+  }, 50);
+});
 </script>
 
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+</style>
+
 <style scoped>
-.home {
-  max-width: 100%;
+:root {
+  --bg-dark: #000000;
+  --text-light: #ffffff;
+  --text-dim: rgba(255, 255, 255, 0.7);
+  --accent-color: #3D85F4; /* Blue accent */
+  --grid-gap: 2rem;
+  --section-spacing: 10rem;
+  --border-light: rgba(255, 255, 255, 0.1);
 }
 
+/* Global Styles */
+.home-page {
+  background-color: var(--bg-dark);
+  color: var(--text-light);
+  font-family: 'Space Grotesk', sans-serif;
+  overflow-x: hidden;
+  position: relative;
+  transform: translateX(-100%);
+  transition: transform 0.8s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.slide-in {
+  transform: translateX(0);
+}
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+section {
+  margin-bottom: 120px;
+  padding: 60px 0;
+}
+
+h1, h2, h3, h4, p {
+  margin: 0;
+}
+
+.section-label {
+  font-size: 0.875rem;
+  letter-spacing: 0.2em;
+  color: var(--text-dim);
+  margin-bottom: 3rem;
+}
+
+/* Hero Section */
 .hero {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: white;
-  padding: 6rem 1rem;
-  text-align: center;
-  clip-path: polygon(0 0, 100% 0, 100% 85%, 0 100%);
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
 }
 
 .hero-content {
-  max-width: 800px;
-  margin: 0 auto;
+  text-align: center;
+  position: relative;
+  z-index: 2;
+}
+
+.hero-circle {
+  width: 300px;
+  height: 300px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(61, 133, 244, 0.2) 0%, rgba(61, 133, 244, 0) 70%);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
 }
 
 .hero h1 {
-  font-size: 3.5rem;
-  margin-bottom: 1rem;
+  font-size: 5rem;
   font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.accent {
+  color: var(--accent-color);
 }
 
 .hero-subtitle {
   font-size: 1.5rem;
-  margin-bottom: 2.5rem;
-  opacity: 0.9;
   font-weight: 300;
+  max-width: 600px;
+  margin: 0 auto 3rem;
+  line-height: 1.4;
 }
 
 .hero-actions {
-  display: flex;
-  justify-content: center;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.btn-primary, .btn-secondary {
-  display: inline-block;
-  padding: 0.9rem 2rem;
-  border-radius: 50px;
-  font-size: 1.1rem;
-  text-decoration: none;
-  transition: all 0.3s;
-  font-weight: 500;
+  margin-top: 2rem;
 }
 
 .btn-primary {
-  background-color: white;
-  color: var(--primary-color);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  display: inline-block;
+  background-color: transparent;
+  color: var(--text-light);
+  border: 1px solid var(--text-light);
+  padding: 0.8rem 2.5rem;
+  font-size: 1rem;
+  text-decoration: none;
+  letter-spacing: 0.1em;
+  transition: all 0.3s;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 500;
 }
 
 .btn-primary:hover {
-  background-color: #f8f9fa;
-  transform: translateY(-3px);
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background-color: var(--text-light);
+  color: var(--bg-dark);
 }
 
-.btn-secondary {
-  background-color: rgba(255, 255, 255, 0.15);
-  color: white;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+/* Manifesto Section */
+.manifesto {
+  padding: 5rem 0;
+  margin-bottom: 140px;
 }
 
-.btn-secondary:hover {
-  background-color: rgba(255, 255, 255, 0.25);
-  transform: translateY(-3px);
-}
-
-section {
-  padding: 6rem 1rem;
-  max-width: 1200px;
+.text-block {
+  max-width: 800px;
   margin: 0 auto;
-  text-align: center;
 }
 
-section h2 {
-  font-size: 2.5rem;
-  margin-bottom: 3rem;
-  color: var(--text-primary);
-  position: relative;
-  display: inline-block;
+.text-block p {
+  font-size: 2rem;
+  line-height: 1.4;
+  font-weight: 300;
 }
 
-section h2::after {
-  content: '';
-  position: absolute;
-  width: 60px;
-  height: 4px;
-  background-color: var(--primary-color);
-  bottom: -15px;
-  left: 50%;
-  transform: translateX(-50%);
-  border-radius: 2px;
+/* Tool Grid */
+.tool-grid {
+  margin: 8rem 0;
+  margin-bottom: 160px;
 }
 
-.features {
-  background-color: var(--bg-light);
-}
-
-.feature-grid {
+.tool-items {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 2rem;
 }
 
-.feature-card {
-  background-color: white;
-  border-radius: 12px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  padding: 2.5rem;
-  transition: all 0.3s;
-  height: 100%;
+.tool-item {
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
-.feature-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-}
-
-.feature-icon {
-  background-color: var(--primary-bg);
-  color: var(--primary-color);
-  width: 70px;
-  height: 70px;
-  border-radius: 50%;
+.tool-icon {
+  width: 80px;
+  height: 80px;
+  margin-bottom: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto 1.5rem;
-  box-shadow: 0 5px 15px rgba(76, 175, 80, 0.2);
 }
 
-.feature-card h3 {
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  font-size: 1.4rem;
-}
-
-.feature-card p {
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.how-it-works {
-  background-color: white;
-}
-
-.steps {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 3rem;
-}
-
-.step {
-  flex: 1;
-  min-width: 250px;
-  max-width: 300px;
-  text-align: center;
-  position: relative;
-}
-
-.step-number {
+.circle-icon {
   width: 50px;
   height: 50px;
-  background-color: var(--primary-color);
-  color: white;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin: 0 auto 1.5rem;
-  position: relative;
-  z-index: 1;
+  background-color: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.step h3 {
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-  font-size: 1.4rem;
-}
-
-.step p {
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.showcase {
-  background-color: var(--bg-light);
-}
-
-.showcase-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2.5rem;
-}
-
-.showcase-item {
-  background-color: white;
-  border-radius: 12px;
-  overflow: hidden;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: all 0.3s;
-}
-
-.showcase-item:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
-}
-
-.showcase-image {
-  height: 180px;
-  background-size: cover;
-  background-position: center;
-}
-
-.showcase-item h3 {
-  padding: 1.5rem 1.5rem 0.5rem;
-  color: var(--text-primary);
-  font-size: 1.4rem;
-}
-
-.showcase-item p {
-  padding: 0 1.5rem 1.5rem;
-  color: var(--text-secondary);
-  line-height: 1.6;
-}
-
-.cta {
-  background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
-  color: white;
+.tool-name {
+  font-size: 0.8rem;
+  letter-spacing: 0.1em;
   text-align: center;
-  padding: 5rem 1rem;
-  margin-top: 3rem;
-  clip-path: polygon(0 15%, 100% 0, 100% 100%, 0 100%);
 }
 
-.cta-content {
-  max-width: 800px;
+/* Column Section */
+.column-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 4rem;
+}
+
+.column-content {
+  max-width: 400px;
+}
+
+.column-content h2 {
+  font-size: 3rem;
+  line-height: 1.1;
+  margin-bottom: 2rem;
+  font-weight: 700;
+}
+
+.column-content p {
+  font-size: 1.2rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+}
+
+/* Systems Grid */
+.systems-items {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 4rem 2rem;
+}
+
+.system-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.system-circle {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  margin-bottom: 2rem;
+  background: radial-gradient(circle, rgba(61, 133, 244, 0.15) 0%, rgba(61, 133, 244, 0) 70%);
+  border: 1px solid rgba(61, 133, 244, 0.2);
+}
+
+.system-item h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.system-item p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-dim);
+  max-width: 300px;
   margin: 0 auto;
 }
 
-.cta h2 {
-  font-size: 2.5rem;
+/* Use Cases */
+.case-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 4rem 2rem;
+}
+
+.case {
+  position: relative;
+  padding-top: 2rem;
+}
+
+.case-number {
+  font-size: 3rem;
+  font-weight: 700;
+  color: rgba(61, 133, 244, 0.2);
+  position: absolute;
+  top: -2.5rem;
+  left: 0;
+}
+
+.case h3 {
+  font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: white;
+  font-weight: 500;
 }
 
-.cta h2::after {
-  background-color: white;
+.case p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: var(--text-dim);
 }
 
-.cta p {
-  font-size: 1.25rem;
-  margin-bottom: 2rem;
-  opacity: 0.9;
+/* Metrics */
+.metrics {
+  margin: 15rem 0;
 }
 
-.cta .btn-primary {
-  background-color: white;
-  color: var(--primary-color);
-  padding: 1rem 2.5rem;
-  font-size: 1.2rem;
+.metrics-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
 }
 
-.cta .btn-primary:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+.metric {
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 6rem;
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 1rem;
+  background: linear-gradient(45deg, #fff, var(--accent-color));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.metric-label {
+  font-size: 1rem;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
+}
+
+/* CTA Section */
+.cta-section {
+  padding: 10rem 0;
+  text-align: center;
+  background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), 
+              radial-gradient(circle at 50% 50%, rgba(61, 133, 244, 0.2) 0%, rgba(0,0,0,0) 70%);
+  margin-bottom: 160px;
+}
+
+.cta-section h2 {
+  font-size: 3.5rem;
+  margin-bottom: 3rem;
+  font-weight: 700;
+}
+
+.cta-actions {
+  margin-top: 3rem;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 1200px) {
+  .hero h1 {
+    font-size: 4rem;
+  }
+  
+  .text-block p {
+    font-size: 1.8rem;
+  }
+  
+  .column-content h2 {
+    font-size: 2.5rem;
+  }
+  
+  .metric-value {
+    font-size: 5rem;
+  }
+  
+  .cta-section h2 {
+    font-size: 3rem;
+  }
+}
+
+@media (max-width: 992px) {
+  :root {
+    --section-spacing: 8rem;
+  }
+  
+  .hero h1 {
+    font-size: 3.5rem;
+  }
+  
+  .hero-subtitle {
+    font-size: 1.3rem;
+  }
+  
+  .column-grid {
+    grid-template-columns: 1fr;
+    gap: 5rem;
+  }
+  
+  .column-content {
+    max-width: 100%;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
 }
 
 @media (max-width: 768px) {
   .hero h1 {
+    font-size: 3rem;
+  }
+  
+  .text-block p {
+    font-size: 1.5rem;
+  }
+  
+  .case-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 5rem;
+  }
+  
+  .cta-section h2 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 576px) {
+  :root {
+    --section-spacing: 6rem;
+  }
+  
+  .hero h1 {
     font-size: 2.5rem;
   }
   
-  .hero-subtitle {
-    font-size: 1.2rem;
+  .tool-items {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   }
   
-  section h2 {
-    font-size: 2rem;
+  .systems-items {
+    grid-template-columns: 1fr;
   }
   
-  .cta h2 {
-    font-size: 2rem;
+  .floating-nav {
+    right: 2rem;
+    bottom: 2rem;
+    transform: none;
   }
+}
+
+/* Floating Navigation */
+.floating-nav {
+  position: fixed;
+  right: 2rem;
+  bottom: 2rem;
+  z-index: 1000;
+}
+
+.nav-circle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: white;
+  color: black;
+  text-decoration: none;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+  transition: transform 0.3s cubic-bezier(0.19, 1, 0.22, 1);
+}
+
+.nav-circle:hover {
+  transform: scale(1.1);
+}
+
+.nav-arrow {
+  font-size: 2rem;
+  font-weight: bold;
 }
 </style> 

@@ -84,29 +84,34 @@ class ApiService {
     // streamingService.disconnect(); 
   }
 
-  // Agent/Flow methods (Now pointing to actual API endpoints)
+  // Agent/Flow methods (Now pointing to actual Agent API endpoints)
   async getFlows() { // Fetches Agents
-    const response = await this.api.get('/api/flows'); 
+    // TODO: Update route name if needed (currently GET /api/flows -> frontend GET /api/agents)
+    const response = await this.api.get('/api/agents'); 
     return response.data;
   }
 
-  async getFlow(flowId) { // Fetches specific Agent details
-    const response = await this.api.get(`/api/flows/${flowId}`);
+  async getFlow(agentId) { // Fetches specific Agent details
+    // TODO: Update route name if needed (currently GET /api/flows/{id} -> frontend GET /api/agents/{id})
+    const response = await this.api.get(`/api/agents/${agentId}`);
     return response.data;
   }
 
-  async createFlow(flowData) { // Generic - might not be used if using createFlowFromTemplate
-    const response = await this.api.post('/api/flows', flowData);
+  async createFlow(flowData) { // Generic Agent creation - Less likely used?
+    // TODO: Update route name if needed 
+    const response = await this.api.post('/api/agents', flowData); 
     return response.data;
   }
 
-  async updateFlow(flowId, flowData) { // Updates Agent
-    const response = await this.api.put(`/api/flows/${flowId}`, flowData);
+  async updateFlow(agentId, agentData) { // Updates Agent
+    // TODO: Update route name if needed
+    const response = await this.api.put(`/api/agents/${agentId}`, agentData);
     return response.data;
   }
 
-  async deleteFlow(flowId) { // Deletes Agent
-    await this.api.delete(`/api/flows/${flowId}`);
+  async deleteFlow(agentId) { // Deletes Agent
+    // TODO: Update route name if needed
+    await this.api.delete(`/api/agents/${agentId}`);
     // Return status or confirmation if needed
   }
 
@@ -138,12 +143,20 @@ class ApiService {
 
   // Flow templates (Now using actual API calls)
   async getFlowTemplates() {
+    // This endpoint name is okay - it fetches templates
     const response = await this.api.get('/api/flows/templates');
     return response.data;
   }
 
   async createFlowFromTemplate(templateId, customization) { // Creates Agent from template
-    const response = await this.api.post(`/api/flows/templates/${templateId}`, customization);
+    // TODO: Update API call to match new backend endpoint POST /api/agents/fromTemplate
+    // Send templateId in the body along with customization data
+    const requestBody = {
+        templateId: templateId, // UUID string
+        ...customization // Includes name, description, config?
+    };
+    const response = await this.api.post(`/api/agents/fromTemplate`, requestBody);
+    // const response = await this.api.post(`/api/flows/templates/${templateId}`, customization); // OLD WAY
     return response.data;
   }
   

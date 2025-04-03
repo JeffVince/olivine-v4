@@ -1,69 +1,76 @@
 import { getConnectedClient } from '../_utils/astraClient.js';
 import { types } from '@datastax/cassandra-driver';
+import { verifyAuth, addStandardHeaders, createErrorResponse } from '../auth_handler.js';
 
-export const config = {
-  runtime: 'edge'
-};
+// export const config = { runtime: 'edge' }; // Remove edge config
 
 // Handles GET /api/integrations/credentials
 export default async function handler(request) {
+
+  // Handle CORS preflight requests
+  if (request.method === 'OPTIONS') {
+    const optionsResponse = new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Methods': 'GET, OPTIONS',
+        'Access-Control-Allow-Headers': 'Authorization',
+        'Access-Control-Max-Age': '86400' 
+      }
+    });
+    return addStandardHeaders(optionsResponse);
+  }
+
   if (request.method !== 'GET') {
-    return new Response(JSON.stringify({ message: 'Method not allowed' }), {
-      status: 405,
-      headers: { 'Allow': 'GET', 'Content-Type': 'application/json' },
-    });
-  }
-
-  const user = request.user;
-
-  // Middleware should guarantee user object
-  if (!user || !user.id) {
-    return new Response(JSON.stringify({ message: 'Authentication required' }), {
-      status: 401,
-      headers: { 'Content-Type': 'application/json' },
-    });
-  }
-  
-  let userId;
-  try {
-      userId = types.Uuid.fromString(user.id);
-  } catch (e) {
-       console.error("Invalid user ID format in JWT payload:", user.id);
-       return new Response(JSON.stringify({ message: 'Invalid user identifier' }), { status: 400 });
+     const methodNotAllowedResponse = new Response(JSON.stringify({ status: 'error', message: 'Method not allowed' }), {
+        status: 405,
+        headers: { 'Allow': 'GET', 'Content-Type': 'application/json' } 
+     });
+     return addStandardHeaders(methodNotAllowedResponse);
   }
 
   try {
+    // --- Authentication --- 
+    const user = await verifyAuth(request);
+    let userId;
+    try {
+        userId = types.Uuid.fromString(user.id);
+    } catch (e) {
+         console.error("Invalid user ID format in JWT payload:", user.id);
+         return createErrorResponse('Invalid user identifier', 400);
+    }
+
+    // --- Database Fetch --- 
     const client = await getConnectedClient();
     
-    // Fetch credentials (integrations) for the user, excluding sensitive data
+    // Fetch credentials (integrations) for the user
     const query = `SELECT id, name, type, service_name, status, created_at 
                      FROM integrations 
                      WHERE user_id = ?`; 
-                     // REMOVED ALLOW FILTERING - user_id is partition key now
-                     // TODO: Review table schema - ensure efficient querying by user_id (DONE via schema design)
                      
     const params = [userId];
     const result = await client.execute(query, params, { prepare: true });
     
     const credentials = result.rows.map(row => ({
-      id: row.id.toString(), // Keep ID as string for frontend compatibility
+      id: row.id.toString(),
       name: row.name,
-      type: row.type, // e.g., 'apikey', 'oauth2'
-      service_name: row.service_name, // e.g., 'OpenAI', 'Google Drive'
-      status: row.status, // e.g., 'active', 'expired'?
+      type: row.type,
+      service_name: row.service_name,
+      status: row.status,
       created_at: row.created_at ? row.created_at.toISOString() : null,
     }));
 
-    return new Response(JSON.stringify(credentials), {
+    const successResponse = new Response(JSON.stringify(credentials), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
+    return addStandardHeaders(successResponse);
 
   } catch (error) {
-    console.error(`Error fetching credentials for user ${user.id}:`, error);
-    return new Response(JSON.stringify({ message: 'Failed to fetch credentials' }), {
-      status: 500,
-      headers: { 'Content-Type': 'application/json' },
-    });
+    // --- Error Handling --- 
+    if (error.message.startsWith('Authentication')) {
+        return createErrorResponse(error.message, 401);
+    }
+    console.error(`Error fetching credentials for user ${user?.id}:`, error);
+    return createErrorResponse('Failed to fetch credentials', 500);
   }
 } 
