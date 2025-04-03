@@ -54,33 +54,82 @@ wss://pulsar-aws-uswest2.streaming.datastax.com:8001/ws/v2
 
 
 ## 2. Function Package Structure
-The correct package structure is critical. Python modules and dependencies must be at the root level of the zip file:
+The correct package structure is critical. Your main function code should be inside a directory named after your class/module, and all dependencies must be at the root level of the zip file, alongside your main code directory:
 
 ```
-agent-manager-function.zip
-├── agent_manager.py (your function code)
-├── requests/ (dependencies directly at root)
-├── urllib3/
-├── certifi/
-└── other dependencies...
+your-function-package.zip
+├── your_module_name/            # Directory named after your className
+│   └── __init__.py              # Your function code goes here
+├── requests/                    # Dependency package directory
+├── Crypto/                      # Dependency package directory (e.g., from pycryptodome)
+├── certifi/                     # Dependency package directory
+└── other_dependency_package/    # ...and so on
 ```
+Your `--className` parameter during deployment should match the directory name (`your_module_name` in this example). Pulsar will then look for `your_module_name/__init__.py` to load the function.
 
-## 3. Creating the Function Package
+## 3. Creating the Function Package (Reliable Method using Docker)
+
+To ensure dependencies are compatible with the Astra Streaming Linux environment (typically `linux/amd64`), especially when developing on a different architecture (like macOS ARM), use Docker to build them.
 
 ```bash
-# 1. Create a working directory
-mkdir -p function-name/python-code
-cd function-name/python-code
+# 1. Create the required directory structure
+mkdir -p your-function-name/python-code
+mkdir your-function-name/linux_deps_amd64 # For storing linux dependencies
+cd your-function-name
 
-# 2. Create your function code
-# Save your main function file (example: agent_manager.py)
+# 2. Place your function code
+#    Save your main function code as python-code/your_module_name.py
+#    Example: python-code/credential_manager.py
 
-# 3. Install dependencies DIRECTLY in the working directory
-pip install requests -t .  # This installs all package files at root level
+# 3. Create requirements.txt
+#    List all your Python dependencies in python-code/requirements.txt
+echo "requests" > python-code/requirements.txt
+echo "pycryptodome" >> python-code/requirements.txt
+# Add other dependencies...
 
-# 4. Create the function package
-zip -r function-name.zip *  # This includes all files in current directory
+# 4. Create Dockerfile (in the 'your-function-name' directory)
+#    This Dockerfile builds dependencies for the correct platform.
+cat <<EOF > Dockerfile
+FROM python:3.10-slim
+
+WORKDIR /app
+
+# Copy only the requirements file to leverage Docker cache
+COPY ./python-code/requirements.txt .
+
+# Install dependencies into a specific directory
+# Use --platform=linux/amd64 in the 'docker build' command later if needed,
+# but installing within a linux/amd64 base image *should* suffice.
+# However, explicitly requesting the platform during build is safer.
+RUN pip install --no-cache-dir -r requirements.txt -t ./deps
+EOF
+
+# 5. Build Docker image and extract dependencies
+#    Use --platform linux/amd64 to force the build for the target architecture
+docker build --platform linux/amd64 -t your-builder-amd64 .
+BUILD_ID=$(docker create your-builder-amd64)
+# Use the directory created in Step 1 for amd64 deps
+docker cp $BUILD_ID:/app/deps/. ./linux_deps_amd64 # Copy contents of /app/deps
+docker rm -v $BUILD_ID
+
+# 6. Prepare the final staging directory
+cd .. # Go back to workspace root if needed
+rm -rf staging_final
+mkdir staging_final
+mkdir staging_final/your_module_name # Match className
+
+# 7. Copy source code and dependencies
+cp your-function-name/python-code/your_module_name.py staging_final/your_module_name/__init__.py
+# Copy the *contents* of the linux_deps_amd64 directory
+cp -R your-function-name/linux_deps_amd64/* staging_final/
+
+# 8. Create the final function package zip
+cd staging_final
+zip -r ../your-function-package.zip . # Zip contents of staging_final
+cd .. # Go back to workspace root
 ```
+Replace `your-function-name`, `your_module_name`, and `your-function-package.zip` with your actual names. Ensure `your_module_name.py` exists and `requirements.txt` is populated correctly.
+
 
 ## 4. Function Configuration
 Key parameters for function creation:
@@ -162,13 +211,19 @@ deploy the function using the absolute path to the zip file
 
 | Error | Solution |
 |-------|----------|
-| "ModuleNotFoundError: No module named 'X'" | Install the module at the root level of your function package |
-| "UNAVAILABLE: io exception" | Check your package structure, ensure dependencies are at root level |
-| "Could not import User Function Module" | Verify className parameter matches your module name |
-| "401 Unauthorized" | Verify your authentication token is valid and not expired |
-| "Host resolution failure" | Check that you're using the correct admin URL for your region |
+| "ModuleNotFoundError: No module named 'X'" | Ensure the module 'X' and its own dependencies were correctly installed and packaged at the root level of the zip file, alongside your main function directory. Verify the architecture matches (see Section 3 and 8). |
+| "UNAVAILABLE: io exception" | Often related to package structure or missing dependencies. Double-check the zip structure (Section 2) and ensure all required libraries are included and compatible. |
+| "Could not import User Function Module" | Verify `--className` parameter matches the directory name containing your `__init__.py` function code (case-sensitive). |
+| "401 Unauthorized" | Verify your authentication token (`--auth-params "token:YOUR_TOKEN"`) is valid, not expired, and has permissions for function management. Ensure the token is placed correctly in the command (global option *before* `functions create/update`). |
+| "Host resolution failure" | Check that you're using the correct admin URL (`--admin-url`) for your Astra region/cluster. |
+| `OSError: Cannot load native module 'Crypto.Cipher._raw_ecb': ... invalid ELF header` OR `... cannot open shared object file: No such file or directory` | This indicates an architecture mismatch or missing native compiled code (`.so` files). Dependencies (like `pycryptodome`) were likely built on an incompatible architecture (e.g., ARM Mac) for the Astra Linux/amd64 runtime. Rebuild dependencies using Docker with `--platform linux/amd64` as shown in Section 3. Ensure the `.so` files are present at the correct path within the zip file. |
 
 ## 8. Common Issues and Solutions (Extended)
+
+### Architecture Mismatch (Critical)
+Astra Streaming functions run in a Linux environment, typically on `amd64` (also known as `x86_64`) architecture. If you build your Python dependencies (especially those with C extensions like `pycryptodome`) on a different architecture (e.g., an ARM-based Mac M1/M2/M3 using `aarch64`), the compiled code (`.so` files) will be incompatible.
+
+**Solution**: ALWAYS build your dependencies within an environment matching the target architecture. Using Docker with the `--platform linux/amd64` flag during the `docker build` step is the most reliable way to ensure compatibility. See the updated Section 3 for the recommended workflow. Failure to do this is a common cause of `OSError: Cannot load native module...` errors during function startup.
 
 ### Python Code Syntax Issues
 | Issue | Solution |

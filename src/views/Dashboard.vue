@@ -155,8 +155,10 @@ async function fetchAgents() {
   loading.value = true;
   error.value = null;
   try {
-    // Replace mock data with API call
-    const fetchedAgents = await apiService.getFlows(); // Uses existing getFlows which maps to /api/flows
+    console.log('Fetching agents...');
+    // Get agents from the API
+    const fetchedAgents = await apiService.getFlows(); 
+    console.log('Agents fetched:', fetchedAgents);
     agents.value = fetchedAgents;
   } catch (err) {
     console.error('Failed to fetch agents:', err);
@@ -177,10 +179,12 @@ async function fetchFlowTemplates() {
   templateError.value = null;
   flowTemplates.value = []; // Clear previous templates
   try {
+    console.log('Fetching flow templates...');
     // Fetch flow templates from the API
-    const templates = await apiService.getFlowTemplates(); // Assuming this fetches Langflow flows
-    // Assuming templates have 'id' and 'name' properties
-    flowTemplates.value = templates.map(t => ({ id: t.id, name: t.name })); // Adapt based on actual API response structure
+    const templates = await apiService.getFlowTemplates();
+    console.log('Templates fetched:', templates);
+    // Map the templates to the expected format
+    flowTemplates.value = templates.map(t => ({ id: t.id, name: t.name }));
     if (!flowTemplates.value || flowTemplates.value.length === 0) {
         templateError.value = "No flow templates found.";
     }
@@ -219,7 +223,7 @@ function viewAgent(agentId) { // Renamed from viewFlow
 
 // Removed executeFlow and showShareModal as they are not relevant here anymore
 
-async function createNewAgent() { // Renamed from createNewFlow
+async function createNewAgent() {
   if (!newAgent.value.templateId) {
     // Should be caught by disabled button, but check anyway
     console.error("No template selected");
@@ -230,11 +234,10 @@ async function createNewAgent() { // Renamed from createNewFlow
   try {
     console.log('Creating new agent from template:', newAgent.value.templateId);
     
-    // Prepare customization data (name, description)
+    // Prepare customization data
     const customization = {
       name: newAgent.value.name,
-      description: newAgent.value.description
-      // Add other customization fields if needed by the API
+      description: newAgent.value.description || 'Created from template'
     };
 
     // Call the API to create agent from template
@@ -243,21 +246,26 @@ async function createNewAgent() { // Renamed from createNewFlow
       customization
     );
 
+    console.log('Agent created successfully:', createdAgent);
+
     // Add the new agent to the beginning of the list
     agents.value.unshift(createdAgent);
     
     // Reset form and close modal
     showCreateAgentModal.value = false;
-
+    
+    // Show a success message or redirect to the new agent
+    // This could be implemented with a toast notification
+    
   } catch (err) {
     console.error('Failed to create agent:', err);
-    // Display error to the user (e.g., using a toast notification or updating the error ref)
-     if (err.response && err.response.data && err.response.data.detail) {
+    // Display error to the user
+    if (err.response && err.response.data && err.response.data.detail) {
       error.value = `Failed to create agent: ${err.response.data.detail}`;
     } else if (err.message) {
-       error.value = `Failed to create agent: ${err.message}`;
+      error.value = `Failed to create agent: ${err.message}`;
     } else {
-       error.value = 'An unexpected error occurred while creating the agent.';
+      error.value = 'An unexpected error occurred while creating the agent.';
     }
   } finally {
     createLoading.value = false;

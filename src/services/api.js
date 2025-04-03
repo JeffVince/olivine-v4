@@ -143,20 +143,21 @@ class ApiService {
 
   // Flow templates (Now using actual API calls)
   async getFlowTemplates() {
-    // This endpoint name is okay - it fetches templates
+    // Call the endpoint to get available Langflow templates
+    console.log('Fetching flow templates from:', `${API_URL}/api/flows/templates`);
     const response = await this.api.get('/api/flows/templates');
     return response.data;
   }
 
-  async createFlowFromTemplate(templateId, customization) { // Creates Agent from template
-    // TODO: Update API call to match new backend endpoint POST /api/agents/fromTemplate
-    // Send templateId in the body along with customization data
+  async createFlowFromTemplate(templateId, customization) {
+    // Create an agent from a Langflow template
+    console.log('Creating agent from template:', templateId, customization);
     const requestBody = {
-        templateId: templateId, // UUID string
-        ...customization // Includes name, description, config?
+      templateId: templateId,
+      ...customization
     };
+    // Use the proper endpoint for creating an agent from a template
     const response = await this.api.post(`/api/agents/fromTemplate`, requestBody);
-    // const response = await this.api.post(`/api/flows/templates/${templateId}`, customization); // OLD WAY
     return response.data;
   }
   

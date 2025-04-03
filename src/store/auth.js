@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia';
 // import api from '../services/api';
+import streamingService from '../services/streamingService';
 
 /**
  * Auth store for managing user authentication state
@@ -77,6 +78,16 @@ export const useAuthStore = defineStore('auth', {
         
         // Set default auth header for API calls when we have real API
         // api.setAuthHeader(response.data.token);
+        
+        // Initialize streaming service connection
+        try {
+          console.log('Initializing streaming connection for user', this.user.id);
+          await streamingService.connect(this.user.id, this.token);
+          console.log('Streaming connection initialized successfully');
+        } catch (streamErr) {
+          console.error('Failed to initialize streaming connection:', streamErr);
+          // We don't fail the login if streaming fails - user can still use other features
+        }
         
         return response;
       } catch (error) {
@@ -276,6 +287,13 @@ export const useAuthStore = defineStore('auth', {
      * Logout user
      */
     logout() {
+      // Disconnect streaming service
+      try {
+        streamingService.disconnect();
+      } catch (err) {
+        console.error('Error disconnecting streaming service:', err);
+      }
+      
       this.user = null;
       this.token = null;
       

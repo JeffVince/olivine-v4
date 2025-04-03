@@ -668,6 +668,54 @@ onBeforeUnmount(() => {
     closeEventSource(); 
 });
 
+function startNewConversation() {
+  if (!agentId.value || agentLoading.value) {
+    return;
+  }
+  console.log('Opening new conversation modal');
+  showNewConversationModal.value = true;
+}
+
+function closeNewConversationModal() {
+  showNewConversationModal.value = false;
+}
+
+async function createConversation() {
+  console.log('Creating new conversation for agent:', agentId.value);
+  // Reset form and close modal first
+  showNewConversationModal.value = false;
+  
+  // Show loading state
+  conversationsLoading.value = true;
+  error.value = null;
+  
+  try {
+    // Generate a suitable title (could be customizable in the future)
+    const title = `New Chat - ${new Date().toLocaleString()}`;
+    
+    // Create conversation in backend
+    const newConversation = await apiService.createAgentConversation(agentId.value, {
+      title: title,
+      // Add any other fields needed by the backend
+    });
+    
+    console.log('New conversation created:', newConversation);
+    
+    // Add to list and select it
+    conversations.value.unshift(newConversation);
+    await selectConversation(newConversation);
+    
+  } catch (err) {
+    console.error('Failed to create conversation:', err);
+    error.value = 'Failed to create new conversation.';
+    if (err.response?.data?.detail) {
+      error.value += ` ${err.response.data.detail}`;
+    }
+  } finally {
+    conversationsLoading.value = false;
+  }
+}
+
 </script>
 
 <style scoped>
