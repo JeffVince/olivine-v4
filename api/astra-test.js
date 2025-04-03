@@ -1,22 +1,19 @@
 import { getConnectedClient } from './_utils/astraClient.js';
-import { addStandardHeaders, createErrorResponse } from './auth_handler.js';
 
-export default async function handler(request) {
+export default async function handler(req, res) {
   // Handle CORS preflight requests
-  if (request.method === 'OPTIONS') {
-    const optionsResponse = new Response(null, {
-      status: 204,
-      headers: {
-        'Access-Control-Allow-Methods': 'GET, OPTIONS',
-        'Access-Control-Allow-Headers': 'Authorization, Content-Type',
-        'Access-Control-Max-Age': '86400' 
-      }
-    });
-    return addStandardHeaders(optionsResponse);
+  if (req.method === 'OPTIONS') {
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+    res.setHeader('Access-Control-Max-Age', '86400');
+    return res.status(204).end();
   }
 
-  if (request.method !== 'GET') {
-    return createErrorResponse('Method not allowed', 405);
+  if (req.method !== 'GET') {
+    return res.status(405).json({ 
+      status: 'error',
+      message: 'Method not allowed'
+    });
   }
 
   try {
@@ -36,14 +33,12 @@ export default async function handler(request) {
       }
     };
     
-    return new Response(JSON.stringify(response), {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/json'
-      }
-    });
+    return res.status(200).json(response);
   } catch (error) {
     console.error("Error connecting to Astra DB:", error);
-    return createErrorResponse(`Failed to connect to Astra DB: ${error.message}`, 500);
+    return res.status(500).json({
+      status: 'error',
+      message: `Failed to connect to Astra DB: ${error.message}`
+    });
   }
 } 
