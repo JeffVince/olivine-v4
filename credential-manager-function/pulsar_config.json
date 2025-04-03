@@ -1,0 +1,11 @@
+{
+  "tenant": "olivinetenantv4",
+  "namespace": "default",
+  "name": "credential-manager",
+  "className": "credential_manager",
+  "py": "credential-manager-function-pkg-structure.zip",
+  "inputs": ["persistent://olivinetenantv4/default/credential-manager-input"],
+  "output": "persistent://olivinetenantv4/default/credential-manager-output",
+  "logTopic": "persistent://olivinetenantv4/default/credential-manager-logs",
+  "runtime": "PYTHON"
+} 

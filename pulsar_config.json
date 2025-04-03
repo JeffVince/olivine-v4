@@ -1,0 +1,8 @@
+{
+  "className": "function",
+  "py": "credential-manager-function-super-minimal.zip",
+  "inputs": ["persistent://olivinetenantv4/default/credential-manager-input"],
+  "output": "persistent://olivinetenantv4/default/credential-manager-output",
+  "logTopic": "persistent://olivinetenantv4/default/credential-manager-logs",
+  "runtime": "PYTHON"
+} 

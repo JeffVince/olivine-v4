@@ -1287,7 +1287,7 @@ h1, h2, h3, h4, p {
   position: absolute;
   width: 600px;
   height: 500px;
-  background: radial-gradient(circle, rgba(61, 133, 244, 0.3) 0%, rgba(61, 133, 244, 0) 80%);
+  background: radial-gradient(circle, rgba(61, 133, 244, 0.3) 0%, rgba(61, 133, 244, 0) 60%);
   z-index: 1;
   left: -35%;
   top: 50%;
@@ -1304,7 +1304,7 @@ h1, h2, h3, h4, p {
   width: 600px;
   height: 600px;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(255, 77, 94, 0.2) 0%, rgba(255, 77, 94, 0) 70%);
+  background: radial-gradient(circle, rgba(255, 77, 94, 0.2) 0%, rgba(255, 77, 94, 0) 60%);
   position: absolute;
   top: 50%;
   left: 50%;
