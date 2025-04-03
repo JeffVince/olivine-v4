@@ -11,6 +11,7 @@
     "deploy": "vercel deploy --prod"
   },
   "dependencies": {
+    "@datastax/cassandra-driver": "^4.7.2",
     "@sendgrid/mail": "^7.7.0",
     "@tsndr/cloudflare-worker-jwt": "^3.1.4",
     "axios": "^1.6.2",

@@ -2,7 +2,7 @@ import { getConnectedClient } from '../_utils/astraClient.js';
 import { types } from '@datastax/cassandra-driver';
 import { verifyAuth, addStandardHeaders, createErrorResponse } from '../auth_handler.js';
 
-// export const config = { runtime: 'edge' }; // Remove edge config
+export const config = { runtime: 'edge' };
 
 // Handles GET /api/agents (List Agents for user)
 // Might handle POST /api/agents (Create Agent directly - less likely used if using templates)

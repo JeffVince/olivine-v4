@@ -86,8 +86,8 @@ class ApiService {
 
   // Agent/Flow methods (Now pointing to actual Agent API endpoints)
   async getFlows() { // Fetches Agents
-    // TODO: Update route name if needed (currently GET /api/flows -> frontend GET /api/agents)
-    const response = await this.api.get('/api/agents'); 
+    // Use the local API endpoint instead of directly accessing Astra
+    const response = await this.api.get('/api/agents');
     return response.data;
   }
 
