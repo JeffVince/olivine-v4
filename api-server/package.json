@@ -1,0 +1,11 @@
+{
+  "name": "olivine-api-server",
+  "version": "1.0.0",
+  "description": "Olivine API Server",
+  "engines": {
+    "node": ">=18.x"
+  },
+  "dependencies": {
+    "@datastax/cassandra-driver": "^4.7.2"
+  }
+} 

@@ -1,4 +1,4 @@
-import { Client } from "@datastax/cassandra-driver";
+const { Client } = require("@datastax/cassandra-driver");
 
 // Global client singleton
 let client = null;
@@ -63,7 +63,7 @@ async function connectClient() {
 }
 
 // Export a function that gets the client and ensures connection
-export async function getConnectedClient() {
+async function getConnectedClient() {
   if (!client || client.isShuttingDown) {
     return await connectClient();
   }
@@ -71,11 +71,16 @@ export async function getConnectedClient() {
 }
 
 // Optional: Graceful shutdown (may not be needed in serverless functions)
-export async function shutdownClient() {
+async function shutdownClient() {
   if (client && !client.isShuttingDown) {
     console.log("Shutting down AstraDB client...");
     await client.shutdown();
     client = null;
     console.log("AstraDB client shut down");
   }
+}
+
+module.exports = {
+  getConnectedClient,
+  shutdownClient
 } 

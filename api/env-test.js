@@ -1,5 +1,5 @@
 // Test endpoint to check environment variables
-export default function handler(req, res) {
+module.exports = function handler(req, res) {
   // List of environment variables to check
   const envVars = [
     'ASTRA_DB_ID',

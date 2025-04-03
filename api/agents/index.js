@@ -1,10 +1,10 @@
-import { getConnectedClient } from '../_utils/astraClient.js';
-import { types } from '@datastax/cassandra-driver';
-import { verifyAuth, addStandardHeaders, sendErrorResponse } from '../auth_handler_serverless.js';
+const { getConnectedClient } = require('../_utils/astraClient');
+const { types } = require('@datastax/cassandra-driver');
+const { verifyAuth, addStandardHeaders, sendErrorResponse } = require('../auth_handler_serverless');
 
 // Handles GET /api/agents (List Agents for user)
 // Might handle POST /api/agents (Create Agent directly - less likely used if using templates)
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
